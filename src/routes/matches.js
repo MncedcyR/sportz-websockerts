@@ -30,7 +30,8 @@ matchRouter.get("/", async (req, res) => {
 
 
     } catch (e) {
-        res.status(500).json({ error: 'Failed to fetch matches.', details: e.message });
+        console.error("Failed to fetch matches:", e);
+        res.status(500).json({ error: 'Failed to fetch matches.' });
     }
 });
 
@@ -53,11 +54,14 @@ matchRouter.post('/', async (req, res) => {
             status: getMatchStatus(startTime, endTime),
         }).returning();
 
-        if (res.app.locals.broadcastMatchCreated) {
-            res.app.locals.broadcastMatchCreated(event);
-        }
-
         res.status(201).json({ data: event });
+
+        const broadcastMatchCreated = res.app.locals.broadcastMatchCreated;
+        if (typeof broadcastMatchCreated === "function") {
+            void Promise.resolve(broadcastMatchCreated(event)).catch((broadcastErr) => {
+                console.error("broadcastMatchCreated error:", broadcastErr);
+            });
+        }
     } catch (e) {
         console.error("DB insert error:", e);
         res.status(500).json({ error: 'Failed to create match.', details: e.message });
