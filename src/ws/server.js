@@ -105,20 +105,6 @@ export function attachSocketServer(server) {
     wss.on('connection', async (socket, req) => {
         const ip = req.socket.remoteAddress;
         console.log(`[WS] New connection from ${ip}`);
-        socket.subscriptions = new Set();
-        socket.on('message', (data) => {
-            handleMessage(socket, data);
-        });
-
-        socket.on('error', (e) => {
-            console.error("[WS] Socket error:", e);
-            socket.terminate();
-        });
-
-        socket.on('close', () => {
-            cleanupSubscriptions(socket);
-        });
-
         if (wsArcjet) {
             try {
                 const decision = await wsArcjet.protect(req);
@@ -139,6 +125,19 @@ export function attachSocketServer(server) {
         }
 
         sendJson(socket, { type: 'welcome' });
+        socket.subscriptions = new Set();
+        socket.on('message', (data) => {
+            handleMessage(socket, data);
+        });
+
+        socket.on('error', (e) => {
+            console.error("[WS] Socket error:", e);
+            socket.terminate();
+        });
+
+        socket.on('close', () => {
+            cleanupSubscriptions(socket);
+        });
     });
 
     function broadcastMatchCreated(match) {

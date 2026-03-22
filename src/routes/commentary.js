@@ -53,7 +53,6 @@ commentaryRouter.get("/", async (req, res) => {
         console.error("Error fetching commentary:", error);
         return res.status(500).json({
             error: "Internal server error",
-            details: error.message,
         });
     }
 });
@@ -113,7 +112,6 @@ commentaryRouter.post("/", async (req, res) => {
         console.error("Error inserting commentary:", error);
         return res.status(500).json({
             error: "Internal server error",
-            details: error.message,
         });
     }
 });
